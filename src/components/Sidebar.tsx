@@ -61,26 +61,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="font-bold text-sm tracking-tight text-[#fafaf9] flex items-center gap-1.5">
               REVENUE.AI
               <span className="text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/20 px-1 py-0.5 rounded font-mono">
-                v2.4
+                
               </span>
             </div>
             <div className="text-[10px] text-[#a1a1aa] font-medium tracking-wide">
-              Track 03 – AI Recovery
+              
             </div>
           </div>
         </div>
       </div>
 
-      {/* Demo Environment Notice */}
-      <div className="mx-3 mt-3 px-2.5 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[10px]">
-        <div className="flex items-center gap-1.5 text-amber-300 font-semibold mb-0.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-          <span>Demo Environment</span>
-        </div>
-        <p className="text-[#a1a1aa] text-[10px] leading-tight">
-          All customer & payment records are synthetic demo data stored in <span className="font-mono text-amber-300">/data/*.json</span>.
-        </p>
-      </div>
 
       {/* Main Nav */}
       <nav className="p-3 flex-1 overflow-y-auto space-y-1">

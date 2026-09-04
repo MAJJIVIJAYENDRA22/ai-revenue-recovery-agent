@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Search,
   Filter,
@@ -19,6 +19,8 @@ interface RecoveryCasesPageProps {
   onSelectCase: (caseId: string) => void;
   onNavigate: (page: PageId) => void;
   onQuickRunRecovery: (caseId: string) => void;
+  initialStatusFilter?: string;
+  onStatusFilterChange?: (status: string) => void;
 }
 
 export const RecoveryCasesPage: React.FC<RecoveryCasesPageProps> = ({
@@ -26,20 +28,41 @@ export const RecoveryCasesPage: React.FC<RecoveryCasesPageProps> = ({
   onSelectCase,
   onNavigate,
   onQuickRunRecovery,
+  initialStatusFilter = 'ALL',
+  onStatusFilterChange,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [statusFilter, setStatusFilter] = useState(initialStatusFilter);
   const [riskFilter, setRiskFilter] = useState('ALL');
   const [failureFilter, setFailureFilter] = useState('ALL');
   const [sortBy, setSortBy] = useState<'amount' | 'riskScore' | 'attempts' | 'daysOverdue'>('riskScore');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
+  useEffect(() => {
+    if (initialStatusFilter) {
+      setStatusFilter(initialStatusFilter);
+    }
+  }, [initialStatusFilter]);
+
+  const handleUpdateStatusFilter = (newStatus: string) => {
+    setStatusFilter(newStatus);
+    if (onStatusFilterChange) {
+      onStatusFilterChange(newStatus);
+    }
+  };
 
   const filteredCases = useMemo(() => {
     if (!cases || !Array.isArray(cases)) return [];
     return cases
       .filter((c) => {
         if (!c) return false;
-        if (statusFilter !== 'ALL' && c.status !== statusFilter) return false;
+        if (statusFilter !== 'ALL') {
+          if (statusFilter === 'RETRY') {
+            if (c.status !== 'RETRY' && c.status !== 'AWAITING_CUSTOMER_ACTION' && c.status !== 'IN_PROGRESS') return false;
+          } else if (c.status !== statusFilter) {
+            return false;
+          }
+        }
         if (riskFilter !== 'ALL' && (c.riskLevel || c.risk_level) !== riskFilter) return false;
         if (failureFilter !== 'ALL') {
           const reason = (c.failureReason || c.root_cause || '').toLowerCase();
@@ -92,15 +115,39 @@ export const RecoveryCasesPage: React.FC<RecoveryCasesPageProps> = ({
 
         {/* Status Count Mini-Pills */}
         <div className="flex items-center gap-2 flex-wrap text-xs">
-          <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-md font-mono">
+          <button
+            onClick={() => handleUpdateStatusFilter(statusFilter === 'RECOVERED' ? 'ALL' : 'RECOVERED')}
+            className={`px-2.5 py-1 rounded-md font-mono transition-colors border cursor-pointer ${
+              statusFilter === 'RECOVERED'
+                ? 'bg-emerald-500/25 text-emerald-300 border-emerald-500/50 shadow-xs'
+                : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'
+            }`}
+            title={statusFilter === 'RECOVERED' ? 'Click to clear filter' : 'Filter by Recovered'}
+          >
             Recovered: {cases.filter((c) => c.status === 'RECOVERED').length}
-          </span>
-          <span className="px-2.5 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-md font-mono">
-            Retrying: {cases.filter((c) => c.status === 'RETRY' || c.status === 'AWAITING_CUSTOMER_ACTION').length}
-          </span>
-          <span className="px-2.5 py-1 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-md font-mono">
+          </button>
+          <button
+            onClick={() => handleUpdateStatusFilter(statusFilter === 'RETRY' ? 'ALL' : 'RETRY')}
+            className={`px-2.5 py-1 rounded-md font-mono transition-colors border cursor-pointer ${
+              statusFilter === 'RETRY'
+                ? 'bg-amber-500/25 text-amber-300 border-amber-500/50 shadow-xs'
+                : 'bg-amber-500/10 text-amber-400 border-amber-500/20 hover:bg-amber-500/20'
+            }`}
+            title={statusFilter === 'RETRY' ? 'Click to clear filter' : 'Filter by In Retry'}
+          >
+            Retrying: {cases.filter((c) => c.status === 'RETRY' || c.status === 'AWAITING_CUSTOMER_ACTION' || c.status === 'IN_PROGRESS').length}
+          </button>
+          <button
+            onClick={() => handleUpdateStatusFilter(statusFilter === 'ESCALATED' ? 'ALL' : 'ESCALATED')}
+            className={`px-2.5 py-1 rounded-md font-mono transition-colors border cursor-pointer ${
+              statusFilter === 'ESCALATED'
+                ? 'bg-rose-500/25 text-rose-300 border-rose-500/50 shadow-xs'
+                : 'bg-rose-500/10 text-rose-400 border-rose-500/20 hover:bg-rose-500/20'
+            }`}
+            title={statusFilter === 'ESCALATED' ? 'Click to clear filter' : 'Filter by Escalated'}
+          >
             Escalated: {cases.filter((c) => c.status === 'ESCALATED').length}
-          </span>
+          </button>
         </div>
       </div>
 
@@ -123,7 +170,7 @@ export const RecoveryCasesPage: React.FC<RecoveryCasesPageProps> = ({
           <div>
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e) => handleUpdateStatusFilter(e.target.value)}
               className="w-full bg-[#111114] border border-[#27272a] rounded-lg px-3 py-2 text-xs text-[#fafaf9] focus:outline-hidden focus:border-amber-500 cursor-pointer"
             >
               <option value="ALL">All Statuses</option>

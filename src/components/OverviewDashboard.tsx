@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   ShieldAlert,
   ArrowUpRight,
@@ -7,7 +7,9 @@ import {
   Zap,
   CheckCircle2,
   AlertTriangle,
-  Play
+  Play,
+  Filter,
+  X
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -30,6 +32,8 @@ interface OverviewDashboardProps {
   onNavigate: (page: PageId) => void;
   onOpenBatchModal: () => void;
   onOpenScenarioModal: () => void;
+  statusFilter?: string;
+  onStatusFilterSelect?: (status: string) => void;
 }
 
 export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
@@ -39,7 +43,43 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
   onNavigate,
   onOpenBatchModal,
   onOpenScenarioModal,
+  statusFilter: externalStatusFilter,
+  onStatusFilterSelect,
 }) => {
+  const [activeFilter, setActiveFilter] = useState<string>(externalStatusFilter || 'ALL');
+
+  useEffect(() => {
+    if (externalStatusFilter) {
+      setActiveFilter(externalStatusFilter);
+    }
+  }, [externalStatusFilter]);
+
+  const handleToggleFilter = (status: 'RECOVERED' | 'RETRY' | 'ESCALATED') => {
+    const nextFilter = activeFilter === status ? 'ALL' : status;
+    setActiveFilter(nextFilter);
+    if (onStatusFilterSelect) {
+      onStatusFilterSelect(nextFilter);
+    }
+    setTimeout(() => {
+      document.getElementById('main-recovery-cases-table')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 60);
+  };
+
+  const filteredCases = useMemo(() => {
+    const list = cases || [];
+    if (activeFilter === 'RECOVERED') {
+      return list.filter((c) => c.status === 'RECOVERED');
+    }
+    if (activeFilter === 'RETRY') {
+      return list.filter(
+        (c) => c.status === 'RETRY' || c.status === 'AWAITING_CUSTOMER_ACTION' || c.status === 'IN_PROGRESS'
+      );
+    }
+    if (activeFilter === 'ESCALATED') {
+      return list.filter((c) => c.status === 'ESCALATED');
+    }
+    return list;
+  }, [cases, activeFilter]);
   if (!metrics) {
     return (
       <div className="p-8 space-y-4 animate-pulse">
@@ -94,21 +134,6 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
         </div>
       </div>
 
-      {/* Demo Environment Disclaimer Banner */}
-      <div className="bg-[#18181b] border border-amber-500/25 rounded-xl px-4 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-        <div className="flex items-center gap-2.5">
-          <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono text-[10px] font-bold uppercase tracking-wider shrink-0">
-            Demo Environment
-          </span>
-          <span className="text-[#a1a1aa] text-[11px] leading-snug">
-            All customer and payment information shown is synthetic. Sourced dynamically from local JSON files (<span className="font-mono text-amber-300">/data/*.json</span>). No database required.
-          </span>
-        </div>
-        <div className="flex items-center gap-1.5 text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded shrink-0 self-start sm:self-auto">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-          <span>Zero Database Dependency</span>
-        </div>
-      </div>
 
       {/* Top 6 KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
@@ -257,25 +282,78 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
             </ResponsiveContainer>
           </div>
 
-          <div className="pt-4 border-t border-[#27272a] grid grid-cols-3 gap-2 text-center text-xs">
-            <div>
-              <span className="text-[#a1a1aa] block text-[10px] uppercase">Recovered</span>
-              <span className="font-bold text-emerald-400 font-mono">
+          <div id="portfolio-chart-summary" className="pt-4 border-t border-[#27272a] grid grid-cols-3 gap-2 text-center text-xs">
+            <button
+              type="button"
+              id="summary-item-recovered"
+              onClick={() => handleToggleFilter('RECOVERED')}
+              className={`p-2 rounded-lg transition-all cursor-pointer text-center group border ${
+                activeFilter === 'RECOVERED'
+                  ? 'bg-emerald-500/15 border-emerald-500/40 shadow-xs ring-1 ring-emerald-500/30'
+                  : 'bg-transparent hover:bg-[#27272a]/60 border-transparent'
+              }`}
+              title={activeFilter === 'RECOVERED' ? 'Active filter (click to reset)' : 'Click to filter table by Recovered'}
+            >
+              <span className={`text-[10px] uppercase block transition-colors ${
+                activeFilter === 'RECOVERED' ? 'text-emerald-400 font-semibold' : 'text-[#a1a1aa] group-hover:text-[#fafaf9]'
+              }`}>
+                Recovered
+              </span>
+              <span className="font-bold text-white font-mono block mt-0.5">
                 {formatINR(metrics.revenueRecovered)}
               </span>
-            </div>
-            <div>
-              <span className="text-[#a1a1aa] block text-[10px] uppercase">In Retry</span>
-              <span className="font-bold text-amber-400 font-mono">
+              {activeFilter === 'RECOVERED' && (
+                <span className="text-[9px] text-emerald-400 font-mono block mt-0.5">● Filter Active</span>
+              )}
+            </button>
+
+            <button
+              type="button"
+              id="summary-item-in-retry"
+              onClick={() => handleToggleFilter('RETRY')}
+              className={`p-2 rounded-lg transition-all cursor-pointer text-center group border ${
+                activeFilter === 'RETRY'
+                  ? 'bg-amber-500/15 border-amber-500/40 shadow-xs ring-1 ring-amber-500/30'
+                  : 'bg-transparent hover:bg-[#27272a]/60 border-transparent'
+              }`}
+              title={activeFilter === 'RETRY' ? 'Active filter (click to reset)' : 'Click to filter table by In Retry'}
+            >
+              <span className={`text-[10px] uppercase block transition-colors ${
+                activeFilter === 'RETRY' ? 'text-amber-400 font-semibold' : 'text-[#a1a1aa] group-hover:text-[#fafaf9]'
+              }`}>
+                In Retry
+              </span>
+              <span className="font-bold text-white font-mono block mt-0.5">
                 {formatINR(Math.max(0, metrics.revenueAtRisk - metrics.revenueRecovered - 35000))}
               </span>
-            </div>
-            <div>
-              <span className="text-[#a1a1aa] block text-[10px] uppercase">Escalated</span>
-              <span className="font-bold text-rose-400 font-mono">
+              {activeFilter === 'RETRY' && (
+                <span className="text-[9px] text-amber-400 font-mono block mt-0.5">● Filter Active</span>
+              )}
+            </button>
+
+            <button
+              type="button"
+              id="summary-item-escalated"
+              onClick={() => handleToggleFilter('ESCALATED')}
+              className={`p-2 rounded-lg transition-all cursor-pointer text-center group border ${
+                activeFilter === 'ESCALATED'
+                  ? 'bg-rose-500/15 border-rose-500/40 shadow-xs ring-1 ring-rose-500/30'
+                  : 'bg-transparent hover:bg-[#27272a]/60 border-transparent'
+              }`}
+              title={activeFilter === 'ESCALATED' ? 'Active filter (click to reset)' : 'Click to filter table by Escalated'}
+            >
+              <span className={`text-[10px] uppercase block transition-colors ${
+                activeFilter === 'ESCALATED' ? 'text-rose-400 font-semibold' : 'text-[#a1a1aa] group-hover:text-[#fafaf9]'
+              }`}>
+                Escalated
+              </span>
+              <span className="font-bold text-white font-mono block mt-0.5">
                 {formatINR(35000)}
               </span>
-            </div>
+              {activeFilter === 'ESCALATED' && (
+                <span className="text-[9px] text-rose-400 font-mono block mt-0.5">● Filter Active</span>
+              )}
+            </button>
           </div>
         </div>
 
@@ -333,23 +411,57 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
       </div>
 
       {/* Quick Access to Cases Table */}
-      <div className="bg-[#18181b] border border-[#27272a] rounded-xl p-5">
-        <div className="flex items-center justify-between mb-4">
+      <div id="main-recovery-cases-table" className="bg-[#18181b] border border-[#27272a] rounded-xl p-5 scroll-mt-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
-            <h3 className="text-sm font-semibold text-[#fafaf9]">
-              High-Risk Recovery Queue
-            </h3>
-            <p className="text-[11px] text-[#a1a1aa]">
-              Priority subscription failure cases requiring or executing recovery
+            <div className="flex items-center gap-2.5">
+              <h3 className="text-sm font-semibold text-[#fafaf9]">
+                Recovery Cases Queue
+              </h3>
+              {activeFilter !== 'ALL' && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-amber-500/10 text-amber-300 border border-amber-500/25">
+                  <Filter className="w-2.5 h-2.5" />
+                  <span>Filtered: {activeFilter === 'RETRY' ? 'IN RETRY' : activeFilter}</span>
+                  <button
+                    onClick={() => handleToggleFilter(activeFilter as any)}
+                    className="hover:text-white cursor-pointer ml-1 p-0.5 rounded hover:bg-amber-500/20"
+                    title="Clear status filter"
+                  >
+                    <X className="w-2.5 h-2.5" />
+                  </button>
+                </span>
+              )}
+            </div>
+            <p className="text-[11px] text-[#a1a1aa] mt-0.5">
+              {activeFilter !== 'ALL'
+                ? `Showing ${filteredCases.length} case${filteredCases.length === 1 ? '' : 's'} matching status "${activeFilter === 'RETRY' ? 'IN RETRY' : activeFilter}"`
+                : 'Priority subscription failure cases requiring or executing recovery'}
             </p>
           </div>
-          <button
-            onClick={() => onNavigate('cases')}
-            className="text-xs font-medium text-amber-400 hover:text-amber-300 flex items-center gap-1 cursor-pointer"
-          >
-            <span>View All {cases.length} Cases</span>
-            <ArrowUpRight className="w-3.5 h-3.5" />
-          </button>
+
+          <div className="flex items-center gap-2 shrink-0">
+            {activeFilter !== 'ALL' && (
+              <button
+                onClick={() => {
+                  setActiveFilter('ALL');
+                  if (onStatusFilterSelect) onStatusFilterSelect('ALL');
+                }}
+                className="text-xs text-[#a1a1aa] hover:text-[#fafaf9] px-2.5 py-1 rounded bg-[#27272a] hover:bg-[#3f3f46] transition-colors cursor-pointer"
+              >
+                Reset Filter
+              </button>
+            )}
+            <button
+              onClick={() => {
+                if (onStatusFilterSelect) onStatusFilterSelect(activeFilter);
+                onNavigate('cases');
+              }}
+              className="text-xs font-medium text-amber-400 hover:text-amber-300 flex items-center gap-1 cursor-pointer"
+            >
+              <span>View All {activeFilter !== 'ALL' ? filteredCases.length : cases.length} in Cases</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -367,59 +479,67 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-[#27272a]">
-              {(cases || []).slice(0, 5).map((c) => (
-                <tr key={c.id} className="hover:bg-[#111114]/60 transition-colors">
-                  <td className="py-3 px-3 font-mono font-medium text-[#fafaf9]">
-                    {c.invoiceNumber}
-                  </td>
-                  <td className="py-3 px-3 text-[#fafaf9]">{c.customerName}</td>
-                  <td className="py-3 px-3 font-mono font-semibold text-[#fafaf9]">
-                    ₹{c.amount.toLocaleString('en-IN')}
-                  </td>
-                  <td className="py-3 px-3 text-[#a1a1aa] truncate max-w-[160px]">
-                    {c.failureReason}
-                  </td>
-                  <td className="py-3 px-3">
-                    <span
-                      className={`text-[10px] font-bold px-1.5 py-0.5 rounded font-mono ${
-                        c.riskLevel === 'HIGH'
-                          ? 'text-rose-400 bg-rose-500/10 border border-rose-500/20'
-                          : c.riskLevel === 'MEDIUM'
-                          ? 'text-amber-400 bg-amber-500/10 border border-amber-500/20'
-                          : 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20'
-                      }`}
-                    >
-                      {c.riskLevel} ({c.riskScore})
-                    </span>
-                  </td>
-                  <td className="py-3 px-3 font-mono text-[#a1a1aa]">
-                    {c.attempts}/{c.maxAttempts}
-                  </td>
-                  <td className="py-3 px-3">
-                    <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
-                        c.status === 'RECOVERED'
-                          ? 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20'
-                          : c.status === 'RETRY'
-                          ? 'text-amber-400 bg-amber-500/10 border border-amber-500/20'
-                          : c.status === 'ESCALATED'
-                          ? 'text-rose-400 bg-rose-500/10 border border-rose-500/20'
-                          : 'text-[#a1a1aa] bg-[#27272a]'
-                      }`}
-                    >
-                      {c.status}
-                    </span>
-                  </td>
-                  <td className="py-3 px-3 text-right">
-                    <button
-                      onClick={() => onSelectCase(c.invoiceNumber)}
-                      className="text-amber-400 hover:text-amber-300 font-medium text-xs px-2.5 py-1 rounded bg-[#27272a] hover:bg-amber-500/20 transition-colors"
-                    >
-                      Inspect →
-                    </button>
+              {filteredCases.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-8 text-center text-xs text-[#71717a]">
+                    No recovery cases currently matching status "{activeFilter}".
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filteredCases.slice(0, activeFilter === 'ALL' ? 5 : 15).map((c) => (
+                  <tr key={c.id} className="hover:bg-[#111114]/60 transition-colors">
+                    <td className="py-3 px-3 font-mono font-medium text-[#fafaf9]">
+                      {c.invoiceNumber}
+                    </td>
+                    <td className="py-3 px-3 text-[#fafaf9]">{c.customerName}</td>
+                    <td className="py-3 px-3 font-mono font-semibold text-[#fafaf9]">
+                      ₹{c.amount.toLocaleString('en-IN')}
+                    </td>
+                    <td className="py-3 px-3 text-[#a1a1aa] truncate max-w-[160px]">
+                      {c.failureReason}
+                    </td>
+                    <td className="py-3 px-3">
+                      <span
+                        className={`text-[10px] font-bold px-1.5 py-0.5 rounded font-mono ${
+                          c.riskLevel === 'HIGH'
+                            ? 'text-rose-400 bg-rose-500/10 border border-rose-500/20'
+                            : c.riskLevel === 'MEDIUM'
+                            ? 'text-amber-400 bg-amber-500/10 border border-amber-500/20'
+                            : 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20'
+                        }`}
+                      >
+                        {c.riskLevel} ({c.riskScore})
+                      </span>
+                    </td>
+                    <td className="py-3 px-3 font-mono text-[#a1a1aa]">
+                      {c.attempts}/{c.maxAttempts}
+                    </td>
+                    <td className="py-3 px-3">
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
+                          c.status === 'RECOVERED'
+                            ? 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20'
+                            : c.status === 'RETRY' || c.status === 'AWAITING_CUSTOMER_ACTION'
+                            ? 'text-amber-400 bg-amber-500/10 border border-amber-500/20'
+                            : c.status === 'ESCALATED'
+                            ? 'text-rose-400 bg-rose-500/10 border border-rose-500/20'
+                            : 'text-[#a1a1aa] bg-[#27272a]'
+                        }`}
+                      >
+                        {c.status}
+                      </span>
+                    </td>
+                    <td className="py-3 px-3 text-right">
+                      <button
+                        onClick={() => onSelectCase(c.invoiceNumber)}
+                        className="text-amber-400 hover:text-amber-300 font-medium text-xs px-2.5 py-1 rounded bg-[#27272a] hover:bg-amber-500/20 transition-colors cursor-pointer"
+                      >
+                        Inspect →
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

@@ -44,6 +44,9 @@ export default function App() {
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
   const [isScenarioModalOpen, setIsScenarioModalOpen] = useState(false);
 
+  // Status Filter State for Cases (shared across Dashboard & Cases Page)
+  const [caseStatusFilter, setCaseStatusFilter] = useState<string>('ALL');
+
   // Fetch initial data
   const loadAllData = useCallback(async () => {
     setIsLoading(true);
@@ -146,6 +149,8 @@ export default function App() {
                 onNavigate={setActivePage}
                 onOpenBatchModal={() => setIsBatchModalOpen(true)}
                 onOpenScenarioModal={() => setIsScenarioModalOpen(true)}
+                statusFilter={caseStatusFilter}
+                onStatusFilterSelect={setCaseStatusFilter}
               />
             )}
 
@@ -155,6 +160,8 @@ export default function App() {
                 onSelectCase={handleSelectCase}
                 onNavigate={setActivePage}
                 onQuickRunRecovery={handleLaunchWorkflowFromAnywhere}
+                initialStatusFilter={caseStatusFilter}
+                onStatusFilterChange={setCaseStatusFilter}
               />
             )}
 
