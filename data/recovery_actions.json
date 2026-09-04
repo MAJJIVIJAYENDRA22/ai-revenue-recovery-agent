@@ -1,14 +1,5 @@
 [
   {
-    "id": "ACTION1788514874886",
-    "case_id": "CASE001",
-    "action_type": "REQUEST_PAYMENT_UPDATE",
-    "attempt_number": 2,
-    "result": "SUCCESS",
-    "amount_recovered": 12999,
-    "timestamp": "2026-09-04 09:41:14"
-  },
-  {
     "id": "ACTION001",
     "case_id": "CASE002",
     "action_type": "ESCALATE_TO_HUMAN",

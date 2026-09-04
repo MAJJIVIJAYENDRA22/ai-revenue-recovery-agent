@@ -1,31 +1,5 @@
 [
   {
-    "id": "AUDIT-1788514874886-1",
-    "timestamp": "2026-09-04 09:41:14",
-    "caseId": "CASE001",
-    "invoiceNumber": "INV1001",
-    "event": "Recovery Action Executed",
-    "aiDecision": "Strategy: REQUEST_PAYMENT_UPDATE",
-    "policyDecision": "APPROVED: Attempt within bounds",
-    "action": "REQUEST_PAYMENT_UPDATE",
-    "result": "Intervention delivered to customer channel",
-    "amountRecovered": 0,
-    "operator": "AI Recovery Agent"
-  },
-  {
-    "id": "AUDIT-1788514874886-2",
-    "timestamp": "2026-09-04 09:41:14",
-    "caseId": "CASE001",
-    "invoiceNumber": "INV1001",
-    "event": "Payment Verified — ₹12,999 Recovered",
-    "aiDecision": "Settlement confirmed",
-    "policyDecision": "RULE_1_ENFORCED: STOP RECOVERY ON SUCCESS",
-    "action": "VERIFY_PAYMENT",
-    "result": "₹12,999 verified. Workflow automatically stopped.",
-    "amountRecovered": 12999,
-    "operator": "Policy Guardrail Engine"
-  },
-  {
     "id": "AUDIT001",
     "case_id": "CASE001",
     "event": "PAYMENT_FAILURE_DETECTED",

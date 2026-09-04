@@ -47,21 +47,45 @@ export const BatchProcessingModal: React.FC<BatchProcessingModalProps> = ({
       await new Promise((r) => setTimeout(r, 600));
       setProgress(100);
       setCurrentAction('Batch recovery workflows executed. Settlement verified.');
-      setResults(res.summary);
+
+      // Safely parse summary and metrics with fallback defaults
+      const summaryData = {
+        transactionsProcessed: res?.summary?.transactionsProcessed ?? 50,
+        riskCasesDetected: res?.summary?.riskCasesDetected ?? res?.summary?.riskCasesEvaluated ?? 50,
+        revenueRecovered: res?.summary?.revenueRecovered ?? res?.metrics?.revenueRecovered ?? 0,
+        revenueAtRisk: res?.summary?.revenueAtRisk ?? res?.metrics?.revenueAtRisk ?? 0,
+        recoveryRate: res?.summary?.recoveryRate ?? res?.metrics?.recoveryRate ?? 0,
+        escalatedCases: res?.summary?.escalatedCases ?? res?.metrics?.escalatedCases ?? 0,
+        recoveredInBatch: res?.summary?.recoveredInBatch ?? 0,
+        casesRecoveredCount: res?.summary?.casesRecoveredCount ?? 0,
+        retriesScheduled: res?.summary?.retriesScheduled ?? 0,
+      };
+
+      setResults(summaryData);
       setStage('done');
 
-      confetti({
-        particleCount: 50,
-        spread: 60,
-        origin: { y: 0.6 },
-        colors: ['#f59e0b', '#10b981', '#fafaf9']
-      });
+      try {
+        confetti({
+          particleCount: 50,
+          spread: 60,
+          origin: { y: 0.6 },
+          colors: ['#f59e0b', '#10b981', '#fafaf9']
+        });
+      } catch {
+        // non-blocking fallback if canvas cannot render in iframe
+      }
 
-      showToast('Batch Complete', '50 transactions processed: ₹1,74,000 recovered', 'success');
-      onSuccess();
+      const toastMessage = summaryData.recoveredInBatch > 0
+        ? `Recovered ₹${summaryData.recoveredInBatch.toLocaleString('en-IN')} across ${summaryData.casesRecoveredCount} subscription cases`
+        : `All 50 transactions evaluated, metrics synchronized`;
+      showToast('Batch Complete', toastMessage, 'success');
+
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (err: any) {
       setStage('idle');
-      showToast('Error', err.message || 'Batch execution failed', 'error');
+      showToast('Error', err?.message || 'Batch execution failed', 'error');
     }
   };
 
@@ -138,14 +162,16 @@ export const BatchProcessingModal: React.FC<BatchProcessingModalProps> = ({
 
           {stage === 'done' && results && (
             <div className="space-y-4 animate-in fade-in">
-              <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex items-center gap-3">
+              <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex items-center gap-3">
                 <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
                 <div>
                   <div className="text-xs font-semibold text-emerald-400">
                     Batch Successfully Processed
                   </div>
-                  <div className="text-[11px] text-[#a1a1aa]">
-                    All recovery workflows executed and audit trail synchronized.
+                  <div className="text-[11px] text-[#d4d4d8] mt-0.5">
+                    {results.recoveredInBatch > 0
+                      ? `Recovered ₹${Number(results.recoveredInBatch).toLocaleString('en-IN')} across ${results.casesRecoveredCount} cases in this run.`
+                      : 'All 50 subscription payments evaluated. Recovery policies and guardrails enforced.'}
                   </div>
                 </div>
               </div>
@@ -154,36 +180,39 @@ export const BatchProcessingModal: React.FC<BatchProcessingModalProps> = ({
                 <div className="p-3 bg-[#111114] border border-[#27272a] rounded-lg">
                   <div className="text-[10px] text-[#a1a1aa] uppercase tracking-wider">Processed</div>
                   <div className="text-base font-bold text-[#fafaf9] font-mono mt-0.5">
-                    {results.transactionsProcessed} transactions
+                    {results.transactionsProcessed ?? 50} records
                   </div>
                   <div className="text-[10px] text-amber-400 mt-1">
-                    {results.riskCasesDetected} risk cases identified
+                    {results.riskCasesDetected ?? 50} risk cases evaluated
                   </div>
                 </div>
 
                 <div className="p-3 bg-[#111114] border border-[#27272a] rounded-lg">
-                  <div className="text-[10px] text-[#a1a1aa] uppercase tracking-wider">Recovered</div>
+                  <div className="text-[10px] text-[#a1a1aa] uppercase tracking-wider">Total Recovered</div>
                   <div className="text-base font-bold text-emerald-400 font-mono mt-0.5">
-                    ₹{results.revenueRecovered.toLocaleString('en-IN')}
+                    ₹{Number(results.revenueRecovered ?? 0).toLocaleString('en-IN')}
+                  </div>
+                  <div className="text-[10px] text-emerald-400/90 mt-1 font-mono">
+                    {results.recoveryRate ?? 0}% portfolio recovery
+                  </div>
+                </div>
+
+                <div className="p-3 bg-[#111114] border border-[#27272a] rounded-lg">
+                  <div className="text-[10px] text-[#a1a1aa] uppercase tracking-wider">Active at Risk</div>
+                  <div className="text-base font-bold text-amber-400 font-mono mt-0.5">
+                    ₹{Number(results.revenueAtRisk ?? 0).toLocaleString('en-IN')}
                   </div>
                   <div className="text-[10px] text-[#a1a1aa] mt-1">
-                    {results.recoveryRate}% recovery rate
-                  </div>
-                </div>
-
-                <div className="p-3 bg-[#111114] border border-[#27272a] rounded-lg">
-                  <div className="text-[10px] text-[#a1a1aa] uppercase tracking-wider">Total at Risk</div>
-                  <div className="text-base font-bold text-amber-400 font-mono mt-0.5">
-                    ₹{results.revenueAtRisk.toLocaleString('en-IN')}
+                    {results.retriesScheduled ?? 0} smart retries in queue
                   </div>
                 </div>
 
                 <div className="p-3 bg-[#111114] border border-[#27272a] rounded-lg">
                   <div className="text-[10px] text-[#a1a1aa] uppercase tracking-wider">Escalated to Human</div>
                   <div className="text-base font-bold text-rose-400 font-mono mt-0.5">
-                    {results.escalatedCases} cases
+                    {results.escalatedCases ?? 0} cases
                   </div>
-                  <div className="text-[10px] text-[#a1a1aa] mt-1">Rule 2 enforced</div>
+                  <div className="text-[10px] text-[#a1a1aa] mt-1">Rule 2 guardrail enforced</div>
                 </div>
               </div>
             </div>

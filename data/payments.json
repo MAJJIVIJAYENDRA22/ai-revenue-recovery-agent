@@ -5,15 +5,14 @@
     "invoice_id": "INV1001",
     "amount": 12999,
     "currency": "INR",
-    "status": "SUCCESS",
+    "status": "FAILED",
     "failure_reason": "EXPIRED_CARD",
     "attempt_count": 1,
     "days_overdue": 2,
     "created_at": "2026-09-04T10:00:00",
     "invoiceNumber": "INV1001",
     "customerId": "CUST001",
-    "customerName": "Rahul Sharma",
-    "paidAt": "2026-09-04 09:41:14"
+    "customerName": "Rahul Sharma"
   },
   {
     "id": "PAY002",

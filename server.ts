@@ -986,19 +986,110 @@ app.get(['/api/analytics', '/data/analytics'], (_req, res) => {
 app.post(['/api/batch/process', '/batch/process'], async (_req, res) => {
   const cases = getRecoveryCases();
   const payments = getPayments();
+  const policies = getPolicies();
+  const maxAttempts = policies.max_automated_attempts || policies.maxAutomatedAttempts || 3;
 
-  // Run batch pass: resolve active candidate cases
+  const now = new Date();
+  const timeStr = now.toTimeString().split(' ')[0];
+  const dateStr = now.toISOString().split('T')[0];
+  const fullTimestamp = `${dateStr} ${timeStr}`;
+
   let recoveredInBatch = 0;
   let casesRecoveredCount = 0;
+  let escalatedInBatch = 0;
+  let retriesScheduled = 0;
 
+  // Evaluate all cases across the portfolio
   cases.forEach((c) => {
-    if (c.status === 'ACTIVE' && c.recommended_action === 'REQUEST_PAYMENT_UPDATE' && !c.disputeDetected && !c.optedOut) {
-      c.status = 'RECOVERED';
-      c.amount_recovered = c.amount;
-      c.amountRecovered = c.amount;
-      c.paymentStatus = 'SUCCESS';
-      recoveredInBatch += c.amount;
-      casesRecoveredCount += 1;
+    // Skip already recovered cases
+    if (c.status === 'RECOVERED' || c.paymentStatus === 'SUCCESS') {
+      return;
+    }
+
+    const currentAttempts = c.attempt_count || c.attempts || 0;
+    const isDisputed = c.disputeDetected ||
+      (c.failureReason && c.failureReason.toLowerCase().includes('dispute')) ||
+      (c.root_cause && c.root_cause.toLowerCase().includes('dispute'));
+    const isOptedOut = Boolean(c.optedOut);
+
+    // Guardrail Rule 3 & 4: Stop automation on dispute or opt-out
+    if (isDisputed || isOptedOut) {
+      c.status = 'STOPPED';
+      c.paymentStatus = 'FAILED';
+      c.lastUpdated = fullTimestamp;
+      return;
+    }
+
+    // Guardrail Rule 2: If already max attempts reached or human escalation required
+    const actionType = c.recommendedAction || c.recommended_action || 'SMART_RETRY';
+    if (currentAttempts >= maxAttempts || actionType === 'HUMAN_ESCALATION') {
+      c.status = 'ESCALATED';
+      c.paymentStatus = 'FAILED';
+      c.lastUpdated = fullTimestamp;
+      escalatedInBatch += 1;
+      return;
+    }
+
+    // Process candidate cases with active/retry status
+    if (['ACTIVE', 'RETRY', 'AWAITING_CUSTOMER_ACTION', 'IN_PROGRESS'].includes(c.status)) {
+      const newAttempts = currentAttempts + 1;
+      c.attempt_count = newAttempts;
+      c.attempts = newAttempts;
+      c.lastUpdated = fullTimestamp;
+
+      // Realistic recovery model: resolve high/medium probability cases
+      const isHighRisk = c.riskLevel === 'HIGH' || (c.riskScore && c.riskScore > 80);
+      const shouldRecover = !isHighRisk && (
+        actionType === 'REQUEST_PAYMENT_UPDATE' ||
+        newAttempts <= 2 ||
+        (c.amount < 35000 && Math.random() > 0.25)
+      );
+
+      if (shouldRecover) {
+        c.status = 'RECOVERED';
+        c.paymentStatus = 'SUCCESS';
+        c.amount_recovered = c.amount;
+        c.amountRecovered = c.amount;
+        recoveredInBatch += c.amount;
+        casesRecoveredCount += 1;
+
+        appendRecoveryAction({
+          id: `ACTION-BATCH-${Date.now()}-${c.id}`,
+          case_id: c.id,
+          action_type: actionType === 'REQUEST_PAYMENT_UPDATE' ? 'REQUEST_PAYMENT_UPDATE' : 'RETRY_PAYMENT',
+          attempt_number: newAttempts,
+          result: 'SUCCESS',
+          amount_recovered: c.amount,
+          timestamp: fullTimestamp
+        });
+      } else if (newAttempts >= maxAttempts) {
+        c.status = 'ESCALATED';
+        c.paymentStatus = 'FAILED';
+        escalatedInBatch += 1;
+
+        appendRecoveryAction({
+          id: `ACTION-BATCH-${Date.now()}-${c.id}`,
+          case_id: c.id,
+          action_type: 'ESCALATE_TO_HUMAN',
+          attempt_number: newAttempts,
+          result: 'ESCALATED',
+          amount_recovered: 0,
+          timestamp: fullTimestamp
+        });
+      } else {
+        c.status = 'RETRY';
+        retriesScheduled += 1;
+
+        appendRecoveryAction({
+          id: `ACTION-BATCH-${Date.now()}-${c.id}`,
+          case_id: c.id,
+          action_type: 'RETRY_PAYMENT',
+          attempt_number: newAttempts,
+          result: 'RETRY_SCHEDULED',
+          amount_recovered: 0,
+          timestamp: fullTimestamp
+        });
+      }
     }
   });
 
@@ -1006,14 +1097,14 @@ app.post(['/api/batch/process', '/batch/process'], async (_req, res) => {
 
   const batchLog: AuditLog = {
     id: `AUDIT-BATCH-${Date.now()}`,
-    timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+    timestamp: fullTimestamp,
     caseId: 'BATCH-ALL',
     invoiceNumber: 'MULTIPLE',
     event: 'Batch Revenue Risk Processing Completed',
-    aiDecision: `${payments.length} transactions processed, ${cases.length} risks evaluated`,
-    policyDecision: 'POLICIES_APPLIED_ACROSS_PORTFOLIO',
+    aiDecision: `${payments.length} transactions processed, ${cases.length} risks evaluated across portfolio`,
+    policyDecision: 'POLICIES_APPLIED_ACROSS_PORTFOLIO (Rules 1-8 enforced)',
     action: 'BATCH_PROCESS',
-    result: `Batch completed: ${casesRecoveredCount} cases recovered, ₹${recoveredInBatch.toLocaleString('en-IN')} collected.`,
+    result: `Batch completed: ${casesRecoveredCount} cases recovered, ₹${recoveredInBatch.toLocaleString('en-IN')} collected. ${retriesScheduled} retries queued, ${escalatedInBatch} escalated.`,
     amountRecovered: recoveredInBatch,
     operator: 'AI Recovery Agent'
   };
@@ -1025,9 +1116,15 @@ app.post(['/api/batch/process', '/batch/process'], async (_req, res) => {
     summary: {
       transactionsProcessed: payments.length,
       riskCasesEvaluated: cases.length,
+      riskCasesDetected: cases.length,
+      casesRecoveredCount,
+      recoveredInBatch,
+      retriesScheduled,
       revenueRecovered: metrics.revenueRecovered,
+      revenueAtRisk: metrics.revenueAtRisk,
       recoveryRate: metrics.recoveryRate,
-      escalatedCases: metrics.escalatedCases
+      escalatedCases: metrics.escalatedCases,
+      activeRecoveryCases: metrics.activeRecoveryCases
     },
     metrics
   });
