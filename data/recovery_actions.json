@@ -1,0 +1,173 @@
+[
+  {
+    "id": "ACTION1788514874886",
+    "case_id": "CASE001",
+    "action_type": "REQUEST_PAYMENT_UPDATE",
+    "attempt_number": 2,
+    "result": "SUCCESS",
+    "amount_recovered": 12999,
+    "timestamp": "2026-09-04 09:41:14"
+  },
+  {
+    "id": "ACTION001",
+    "case_id": "CASE002",
+    "action_type": "ESCALATE_TO_HUMAN",
+    "attempt_number": 3,
+    "result": "ESCALATED",
+    "amount_recovered": 0,
+    "timestamp": "2026-09-04T08:22:15"
+  },
+  {
+    "id": "ACTION002",
+    "case_id": "CASE003",
+    "action_type": "STOP_RECOVERY",
+    "attempt_number": 1,
+    "result": "STOPPED",
+    "amount_recovered": 0,
+    "timestamp": "2026-09-03T18:45:00"
+  },
+  {
+    "id": "ACTION003",
+    "case_id": "CASE004",
+    "action_type": "REQUEST_PAYMENT_UPDATE",
+    "attempt_number": 1,
+    "result": "SUCCESS",
+    "amount_recovered": 2999,
+    "timestamp": "2026-09-03T16:05:00"
+  },
+  {
+    "id": "ACTION004",
+    "case_id": "CASE007",
+    "action_type": "RETRY_PAYMENT",
+    "attempt_number": 1,
+    "result": "SUCCESS",
+    "amount_recovered": 3499,
+    "timestamp": "2026-09-03T16:05:00"
+  },
+  {
+    "id": "ACTION005",
+    "case_id": "CASE010",
+    "action_type": "RETRY_PAYMENT",
+    "attempt_number": 1,
+    "result": "SUCCESS",
+    "amount_recovered": 14500,
+    "timestamp": "2026-09-03T16:05:00"
+  },
+  {
+    "id": "ACTION006",
+    "case_id": "CASE013",
+    "action_type": "RETRY_PAYMENT",
+    "attempt_number": 1,
+    "result": "SUCCESS",
+    "amount_recovered": 11500,
+    "timestamp": "2026-09-03T16:05:00"
+  },
+  {
+    "id": "ACTION007",
+    "case_id": "CASE016",
+    "action_type": "RETRY_PAYMENT",
+    "attempt_number": 1,
+    "result": "SUCCESS",
+    "amount_recovered": 4999,
+    "timestamp": "2026-09-03T16:05:00"
+  },
+  {
+    "id": "ACTION008",
+    "case_id": "CASE019",
+    "action_type": "RETRY_PAYMENT",
+    "attempt_number": 1,
+    "result": "SUCCESS",
+    "amount_recovered": 7200,
+    "timestamp": "2026-09-03T16:05:00"
+  },
+  {
+    "id": "ACTION009",
+    "case_id": "CASE022",
+    "action_type": "RETRY_PAYMENT",
+    "attempt_number": 1,
+    "result": "SUCCESS",
+    "amount_recovered": 9999,
+    "timestamp": "2026-09-03T16:05:00"
+  },
+  {
+    "id": "ACTION010",
+    "case_id": "CASE025",
+    "action_type": "RETRY_PAYMENT",
+    "attempt_number": 1,
+    "result": "SUCCESS",
+    "amount_recovered": 6499,
+    "timestamp": "2026-09-03T16:05:00"
+  },
+  {
+    "id": "ACTION011",
+    "case_id": "CASE028",
+    "action_type": "RETRY_PAYMENT",
+    "attempt_number": 1,
+    "result": "SUCCESS",
+    "amount_recovered": 4200,
+    "timestamp": "2026-09-03T16:05:00"
+  },
+  {
+    "id": "ACTION012",
+    "case_id": "CASE031",
+    "action_type": "RETRY_PAYMENT",
+    "attempt_number": 1,
+    "result": "SUCCESS",
+    "amount_recovered": 33000,
+    "timestamp": "2026-09-03T16:05:00"
+  },
+  {
+    "id": "ACTION013",
+    "case_id": "CASE034",
+    "action_type": "RETRY_PAYMENT",
+    "attempt_number": 1,
+    "result": "SUCCESS",
+    "amount_recovered": 16400,
+    "timestamp": "2026-09-03T16:05:00"
+  },
+  {
+    "id": "ACTION014",
+    "case_id": "CASE037",
+    "action_type": "RETRY_PAYMENT",
+    "attempt_number": 1,
+    "result": "SUCCESS",
+    "amount_recovered": 41000,
+    "timestamp": "2026-09-03T16:05:00"
+  },
+  {
+    "id": "ACTION015",
+    "case_id": "CASE040",
+    "action_type": "RETRY_PAYMENT",
+    "attempt_number": 1,
+    "result": "SUCCESS",
+    "amount_recovered": 23500,
+    "timestamp": "2026-09-03T16:05:00"
+  },
+  {
+    "id": "ACTION016",
+    "case_id": "CASE043",
+    "action_type": "RETRY_PAYMENT",
+    "attempt_number": 1,
+    "result": "SUCCESS",
+    "amount_recovered": 28000,
+    "timestamp": "2026-09-03T16:05:00"
+  },
+  {
+    "id": "ACTION017",
+    "case_id": "CASE046",
+    "action_type": "RETRY_PAYMENT",
+    "attempt_number": 1,
+    "result": "SUCCESS",
+    "amount_recovered": 35000,
+    "timestamp": "2026-09-03T16:05:00"
+  },
+  {
+    "id": "ACTION018",
+    "case_id": "CASE049",
+    "action_type": "RETRY_PAYMENT",
+    "attempt_number": 1,
+    "result": "SUCCESS",
+    "amount_recovered": 24000,
+    "timestamp": "2026-09-03T16:05:00"
+  }
+]

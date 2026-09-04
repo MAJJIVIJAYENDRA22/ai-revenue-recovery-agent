@@ -1,0 +1,8 @@
+{
+  "max_automated_attempts": 3,
+  "max_recovery_messages": 3,
+  "stop_when_payment_recovered": true,
+  "stop_on_customer_dispute": true,
+  "stop_on_customer_opt_out": true,
+  "escalate_after_max_attempts": true
+}

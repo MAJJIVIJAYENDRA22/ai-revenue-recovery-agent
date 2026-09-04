@@ -1,0 +1,208 @@
+[
+  {
+    "id": "AUDIT-1788514874886-1",
+    "timestamp": "2026-09-04 09:41:14",
+    "caseId": "CASE001",
+    "invoiceNumber": "INV1001",
+    "event": "Recovery Action Executed",
+    "aiDecision": "Strategy: REQUEST_PAYMENT_UPDATE",
+    "policyDecision": "APPROVED: Attempt within bounds",
+    "action": "REQUEST_PAYMENT_UPDATE",
+    "result": "Intervention delivered to customer channel",
+    "amountRecovered": 0,
+    "operator": "AI Recovery Agent"
+  },
+  {
+    "id": "AUDIT-1788514874886-2",
+    "timestamp": "2026-09-04 09:41:14",
+    "caseId": "CASE001",
+    "invoiceNumber": "INV1001",
+    "event": "Payment Verified — ₹12,999 Recovered",
+    "aiDecision": "Settlement confirmed",
+    "policyDecision": "RULE_1_ENFORCED: STOP RECOVERY ON SUCCESS",
+    "action": "VERIFY_PAYMENT",
+    "result": "₹12,999 verified. Workflow automatically stopped.",
+    "amountRecovered": 12999,
+    "operator": "Policy Guardrail Engine"
+  },
+  {
+    "id": "AUDIT001",
+    "case_id": "CASE001",
+    "event": "PAYMENT_FAILURE_DETECTED",
+    "decision": "HIGH_RISK",
+    "action": "ANALYZE_ROOT_CAUSE",
+    "result": "COMPLETED",
+    "timestamp": "2026-09-04T10:02:01"
+  },
+  {
+    "id": "AUDIT002",
+    "case_id": "CASE001",
+    "event": "REVENUE_RISK_CALCULATED",
+    "decision": "RISK_SCORE_91",
+    "action": "POLICY_CHECK",
+    "result": "APPROVED",
+    "timestamp": "2026-09-04T10:02:05"
+  },
+  {
+    "id": "AUDIT003",
+    "case_id": "CASE002",
+    "event": "MAXIMUM_ATTEMPTS_REACHED",
+    "decision": "POLICY_RULE_2_TRIGGERED",
+    "action": "ESCALATE_TO_HUMAN",
+    "result": "ESCALATED",
+    "timestamp": "2026-09-04T08:22:15"
+  },
+  {
+    "id": "AUDIT004",
+    "case_id": "CASE003",
+    "event": "CUSTOMER_DISPUTE_DETECTED",
+    "decision": "POLICY_RULE_3_TRIGGERED",
+    "action": "STOP_RECOVERY",
+    "result": "WORKFLOW_STOPPED",
+    "timestamp": "2026-09-03T18:45:00"
+  },
+  {
+    "id": "AUDIT005",
+    "case_id": "CASE004",
+    "event": "PAYMENT_RECOVERED",
+    "decision": "SETTLEMENT_VERIFIED",
+    "action": "AUTO_STOP_WORKFLOW",
+    "result": "COMPLETED",
+    "timestamp": "2026-09-03T16:30:10"
+  },
+  {
+    "id": "AUDIT006",
+    "case_id": "CASE001",
+    "event": "REVENUE_RISK_CALCULATED",
+    "decision": "RISK_LEVEL_HIGH",
+    "action": "REQUEST_PAYMENT_UPDATE",
+    "result": "PENDING_CUSTOMER_OR_RETRY",
+    "timestamp": "2026-09-04T09:15:00"
+  },
+  {
+    "id": "AUDIT007",
+    "case_id": "CASE002",
+    "event": "REVENUE_RISK_CALCULATED",
+    "decision": "RISK_LEVEL_HIGH",
+    "action": "HUMAN_ESCALATION",
+    "result": "PENDING_CUSTOMER_OR_RETRY",
+    "timestamp": "2026-09-04T08:15:07"
+  },
+  {
+    "id": "AUDIT008",
+    "case_id": "CASE003",
+    "event": "REVENUE_RISK_CALCULATED",
+    "decision": "RISK_LEVEL_HIGH",
+    "action": "DISPUTE_HOLD",
+    "result": "PENDING_CUSTOMER_OR_RETRY",
+    "timestamp": "2026-09-04T07:15:14"
+  },
+  {
+    "id": "AUDIT009",
+    "case_id": "CASE004",
+    "event": "PAYMENT_RECOVERED",
+    "decision": "SETTLEMENT_CONFIRMED",
+    "action": "REQUEST_PAYMENT_UPDATE",
+    "result": "SUCCESS",
+    "timestamp": "2026-09-04T06:15:21"
+  },
+  {
+    "id": "AUDIT010",
+    "case_id": "CASE005",
+    "event": "REVENUE_RISK_CALCULATED",
+    "decision": "RISK_LEVEL_MEDIUM",
+    "action": "SMART_RETRY",
+    "result": "PENDING_CUSTOMER_OR_RETRY",
+    "timestamp": "2026-09-04T05:15:28"
+  },
+  {
+    "id": "AUDIT011",
+    "case_id": "CASE006",
+    "event": "REVENUE_RISK_CALCULATED",
+    "decision": "RISK_LEVEL_MEDIUM",
+    "action": "SMART_RETRY",
+    "result": "PENDING_CUSTOMER_OR_RETRY",
+    "timestamp": "2026-09-04T04:15:35"
+  },
+  {
+    "id": "AUDIT012",
+    "case_id": "CASE007",
+    "event": "PAYMENT_RECOVERED",
+    "decision": "SETTLEMENT_CONFIRMED",
+    "action": "SMART_RETRY",
+    "result": "SUCCESS",
+    "timestamp": "2026-09-04T03:15:42"
+  },
+  {
+    "id": "AUDIT013",
+    "case_id": "CASE008",
+    "event": "REVENUE_RISK_CALCULATED",
+    "decision": "RISK_LEVEL_MEDIUM",
+    "action": "SMART_RETRY",
+    "result": "PENDING_CUSTOMER_OR_RETRY",
+    "timestamp": "2026-09-04T02:15:49"
+  },
+  {
+    "id": "AUDIT014",
+    "case_id": "CASE009",
+    "event": "REVENUE_RISK_CALCULATED",
+    "decision": "RISK_LEVEL_HIGH",
+    "action": "SMART_RETRY",
+    "result": "PENDING_CUSTOMER_OR_RETRY",
+    "timestamp": "2026-09-04T09:15:56"
+  },
+  {
+    "id": "AUDIT015",
+    "case_id": "CASE010",
+    "event": "PAYMENT_RECOVERED",
+    "decision": "SETTLEMENT_CONFIRMED",
+    "action": "SMART_RETRY",
+    "result": "SUCCESS",
+    "timestamp": "2026-09-04T08:15:03"
+  },
+  {
+    "id": "AUDIT016",
+    "case_id": "CASE011",
+    "event": "REVENUE_RISK_CALCULATED",
+    "decision": "RISK_LEVEL_MEDIUM",
+    "action": "SMART_RETRY",
+    "result": "PENDING_CUSTOMER_OR_RETRY",
+    "timestamp": "2026-09-04T07:15:10"
+  },
+  {
+    "id": "AUDIT017",
+    "case_id": "CASE012",
+    "event": "REVENUE_RISK_CALCULATED",
+    "decision": "RISK_LEVEL_MEDIUM",
+    "action": "SMART_RETRY",
+    "result": "PENDING_CUSTOMER_OR_RETRY",
+    "timestamp": "2026-09-04T06:15:17"
+  },
+  {
+    "id": "AUDIT018",
+    "case_id": "CASE013",
+    "event": "PAYMENT_RECOVERED",
+    "decision": "SETTLEMENT_CONFIRMED",
+    "action": "SMART_RETRY",
+    "result": "SUCCESS",
+    "timestamp": "2026-09-04T05:15:24"
+  },
+  {
+    "id": "AUDIT019",
+    "case_id": "CASE014",
+    "event": "REVENUE_RISK_CALCULATED",
+    "decision": "RISK_LEVEL_MEDIUM",
+    "action": "SMART_RETRY",
+    "result": "PENDING_CUSTOMER_OR_RETRY",
+    "timestamp": "2026-09-04T04:15:31"
+  },
+  {
+    "id": "AUDIT020",
+    "case_id": "CASE015",
+    "event": "REVENUE_RISK_CALCULATED",
+    "decision": "RISK_LEVEL_HIGH",
+    "action": "SMART_RETRY",
+    "result": "PENDING_CUSTOMER_OR_RETRY",
+    "timestamp": "2026-09-04T03:15:38"
+  }
+]
